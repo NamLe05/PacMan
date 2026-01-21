@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from re import X
 import util
 
 class SearchProblem:
@@ -81,23 +82,81 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # Initialize the stack and visited set
+    stack = util.Stack();
+    visited = set([])
+    # Push the start state and empty actions onto the stack
+    stack.push((problem.getStartState(), []))  
+
+    # While the stack is not empty pop the current state off the stack
+    while not stack.isEmpty():
+        # Track current state and actions taken
+        state, actions = stack.pop()
+
+        if problem.isGoalState(state):
+            return actions
+
+        # Add current state to visited and expand fringe by pushing successors to the stack
+        if state not in visited:
+            visited.add(state)
+            for successor, action, _ in problem.getSuccessors(state):
+                if successor not in visited:
+                    stack.push((successor, actions + [action]))
+
+    return [] # No path found
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Initialize the queue and visited set
+    queue = util.Queue();
+    visited = set([])
+    # Enqueue the start state and empty actions onto the queue
+    queue.push((problem.getStartState(), []))  
+
+    # While the queue is not empty dequeue the current state off the queue
+    while not queue.isEmpty():
+        # Track current state and actions taken
+        state, actions = queue.pop()
+
+        if problem.isGoalState(state):
+            return actions
+
+        # Add current state to visited and expand fringe by enqueuing successors
+        if state not in visited:
+            visited.add(state)
+            for successor, action, _ in problem.getSuccessors(state):
+                if successor not in visited:
+                    queue.push((successor, actions + [action]))
+
+    return [] # No path found   
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Initialize the minimum priority queue and visited set
+    pq = util.PriorityQueueWithFunction(lambda x: x[2]);
+    visited = set([])
+    # Enqueue the start state, empty actions, and zero path cost to the min pq
+    pq.push((problem.getStartState(), [], 0)) 
+
+    # While the priority queue is not empty pop the current state off the min pq
+    while not pq.isEmpty():
+        # Track current state and actions taken
+        state, actions, cost = pq.pop()
+
+        if problem.isGoalState(state):
+            return actions
+            
+        # Add current state to visited and expand fringe by enqueuing successors
+        if state not in visited:
+            visited.add(state)
+            for successor, action, stepCost in problem.getSuccessors(state):
+                if successor not in visited:
+                    newCost = cost + stepCost
+                    pq.push((successor, actions + [action], newCost))
+
+    return [] # No path found
 
 def nullHeuristic(state, problem=None):
     """
@@ -108,9 +167,32 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+ 
+    # Initialize the minimum priority queue where priority is cost + heuristic 
+    # and visited set
+    pq = util.PriorityQueueWithFunction(lambda x: x[2] + heuristic(x[0], problem));
+    visited = set([])
 
+    # Enqueue the start state, empty actions, and zero path cost to the min pq
+    pq.push((problem.getStartState(), [], 0)) 
+
+    # While the priority queue is not empty pop the current state off the min pq
+    while not pq.isEmpty():
+        # Track current state and actions taken
+        state, actions, cost = pq.pop()
+
+        if problem.isGoalState(state):
+            return actions
+            
+        # Add current state to visited and expand fringe by enqueuing successors
+        if state not in visited:
+            visited.add(state)
+            for successor, action, stepCost in problem.getSuccessors(state):
+                if successor not in visited:
+                    newCost = cost + stepCost
+                    pq.push((successor, actions + [action], newCost))
+
+    return [] # No path found
 
 # Abbreviations
 bfs = breadthFirstSearch
